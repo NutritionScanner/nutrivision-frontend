@@ -1,15 +1,15 @@
 // src/navigation/AppNavigator.tsx
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
 
-import LoginScreen from '../screens/LoginScreen';
-import SignupScreen from '../screens/SignupScreen';
-import HomeScreen from '../screens/HomeScreen';
-import BarcodeScanner from '../components/BarcodeScanner';
-import FoodDetectionScreen from '../components/FoodDetectionScreen';
-import FruitVegetableDetectionScreen from '../components/FruitVegetableDetectionScreen';
-import OnboardingSwiper from '../screens/onBoardingSwiper';
+import LoginScreen from "../screens/LoginScreen";
+import SignupScreen from "../screens/SignupScreen";
+import HomeScreen from "../screens/HomeScreen";
+import BarcodeScanner from "../components/BarcodeScanner";
+import FoodDetectionScreen from "../components/FoodDetectionScreen";
+import FruitVegetableDetectionScreen from "../components/FruitVegetableDetectionScreen";
+import OnboardingSwiper from "../screens/onBoardingSwiper";
 
 const Stack = createStackNavigator();
 
@@ -26,7 +26,7 @@ const AppNavigator = () => {
           name="Login"
           component={LoginScreen}
           options={{
-            title: 'Login',
+            title: "Login",
             headerLeft: () => null,
           }}
         />
@@ -34,14 +34,24 @@ const AppNavigator = () => {
           name="Signup"
           component={SignupScreen}
           options={{
-            title: 'Signup',
+            title: "Signup",
             headerLeft: () => null,
           }}
         />
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{
+            title: "Home",
+            headerLeft: () => null,
+          }}
+        />
         <Stack.Screen name="BarcodeScanner" component={BarcodeScanner} />
         <Stack.Screen name="FoodDetection" component={FoodDetectionScreen} />
-        <Stack.Screen name="FruitVegetableDetection" component={FruitVegetableDetectionScreen} />
+        <Stack.Screen
+          name="FruitVegetableDetection"
+          component={FruitVegetableDetectionScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

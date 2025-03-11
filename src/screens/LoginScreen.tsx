@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, StyleSheet, Alert } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { auth } from '../firebaseConfig';
 import CustomButton from '../components/CustomButton';
+import { useGoogleAuth } from '../utils/googleAuth';
 
 export type RootStackParamList = {
-    Home: undefined;
-    BarcodeScanner: undefined;
-    FoodDetection: undefined;
-    FruitVegetableDetection: undefined;
-    Login: undefined;
-    Signup: undefined;
+  Home: undefined;
+  BarcodeScanner: undefined;
+  FoodDetection: undefined;
+  FruitVegetableDetection: undefined;
+  Login: undefined;
+  Signup: undefined;
 };
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
@@ -36,6 +37,23 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const { promptAsync, handleGoogleSignIn, response } = useGoogleAuth();
+
+  // When the response from Google changes, attempt to sign in
+  useEffect(() => {
+    const signIn = async () => {
+      if (response?.type === 'success') {
+        const result = await handleGoogleSignIn();
+        if (result) {
+          navigation.navigate('Home');
+        } else {
+          Alert.alert('Google Sign-In Error', 'Unable to sign in with Google.');
+        }
+      }
+    };
+    signIn();
+  }, [response]);
+
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields.');
@@ -58,7 +76,9 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Email<Text style={styles.required}>*</Text></Text>
+        <Text style={styles.label}>
+          Email<Text style={styles.required}>*</Text>
+        </Text>
         <TextInput
           style={[styles.input, emailError ? styles.inputError : null]}
           placeholder="you@email.com"
@@ -69,17 +89,20 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         />
         {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
       </View>
-      <Text style={styles.label}>Password<Text style={styles.required}>*</Text></Text>
+      <Text style={styles.label}>
+        Password<Text style={styles.required}>*</Text>
+      </Text>
       <TextInput
         style={styles.input}
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
-        keyboardType='visible-password'
         secureTextEntry
       />
       <CustomButton title="Login" onPress={handleLogin} disabled={loading} />
       <CustomButton title="Sign Up" onPress={() => navigation.navigate('Signup')} />
+      {/* Google Sign-In Button */}
+      <CustomButton title="Sign in with Google" onPress={() => promptAsync()} />
     </View>
   );
 };
@@ -104,11 +127,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#4a4a4a',
     marginBottom: 6,
-    marginTop : 4
+    marginTop: 4,
   },
   required: {
     color: 'red',
-   
   },
   input: {
     height: 40,

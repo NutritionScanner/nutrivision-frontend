@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+// src/screens/SignupScreen.tsx
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, StyleSheet, Alert } from 'react-native';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import { StackNavigationProp } from '@react-navigation/stack';
 import CustomButton from '../components/CustomButton';
+import { useGoogleAuth } from '../utils/googleAuth';
 
 export type RootStackParamList = {
-    Home: undefined;
-    BarcodeScanner: undefined;
-    FoodDetection: undefined;
-    FruitVegetableDetection: undefined;
-    Login: undefined;
-    Signup: undefined;
+  Home: undefined;
+  BarcodeScanner: undefined;
+  FoodDetection: undefined;
+  FruitVegetableDetection: undefined;
+  Login: undefined;
+  Signup: undefined;
 };
 
 type SignupScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Signup'>;
@@ -26,6 +28,24 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
 
+  // Google Sign-In hook
+  const { promptAsync, handleGoogleSignIn, response } = useGoogleAuth();
+
+  // When the Google auth response updates, try signing in
+  useEffect(() => {
+    const signInWithGoogle = async () => {
+      if (response?.type === 'success') {
+        const result = await handleGoogleSignIn();
+        if (result) {
+          navigation.navigate('Home');
+        } else {
+          Alert.alert('Google Sign-In Error', 'Unable to sign in with Google.');
+        }
+      }
+    };
+    signInWithGoogle();
+  }, [response]);
+
   const validateEmail = (text: string) => {
     setEmail(text);
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -35,7 +55,6 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
       setEmailError('');
     }
   };
-  
 
   const handleSignup = async () => {
     if (!email || !password) {
@@ -60,7 +79,9 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
       <Text style={styles.title}>Sign Up</Text>
 
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Email<Text style={styles.required}>*</Text></Text>
+        <Text style={styles.label}>
+          Email<Text style={styles.required}>*</Text>
+        </Text>
         <TextInput
           style={[styles.input, emailError ? styles.inputError : null]}
           placeholder="you@email.com"
@@ -82,6 +103,8 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
 
       <CustomButton title="Sign Up" onPress={handleSignup} disabled={loading} />
       <CustomButton title="Already have an account? Login" onPress={() => navigation.navigate('Login')} />
+      {/* Google Sign-In Button */}
+      <CustomButton title="Sign Up with Google" onPress={() => promptAsync()} />
     </View>
   );
 };

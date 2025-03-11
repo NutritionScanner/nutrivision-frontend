@@ -1,8 +1,21 @@
-// src/components/FruitVegetableDetectionScreen.tsx
-import React, { useState } from 'react';
-import { View, Text, Button, Image, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { detectFruitVegetable } from '../api/api';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+  Dimensions,
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { detectFruitVegetable } from "../api/api";
+import { LinearGradient } from "expo-linear-gradient";
+import { Camera, Upload, Leaf } from "lucide-react-native";
+
+const { width } = Dimensions.get("window");
 
 const FruitVegetableDetectionScreen = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -11,8 +24,11 @@ const FruitVegetableDetectionScreen = () => {
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission denied', 'Sorry, we need camera roll permissions to make this work!');
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission denied",
+        "Sorry, we need camera roll permissions to make this work!"
+      );
       return;
     }
 
@@ -31,8 +47,11 @@ const FruitVegetableDetectionScreen = () => {
 
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission denied', 'Sorry, we need camera permissions to make this work!');
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission denied",
+        "Sorry, we need camera permissions to make this work!"
+      );
       return;
     }
 
@@ -50,10 +69,10 @@ const FruitVegetableDetectionScreen = () => {
 
   const handleImageUpload = async (uri: string) => {
     const formData = new FormData();
-    formData.append('file', {
+    formData.append("file", {
       uri,
-      name: 'photo.jpg',
-      type: 'image/jpeg',
+      name: "photo.jpg",
+      type: "image/jpeg",
     } as any);
 
     setLoading(true);
@@ -61,111 +80,263 @@ const FruitVegetableDetectionScreen = () => {
       const data = await detectFruitVegetable(formData);
       setNutritionData(data);
     } catch (error) {
-      Alert.alert('Error', 'Unable to detect fruit/vegetable.');
+      Alert.alert("Error", "Unable to detect fruit/vegetable.");
     } finally {
       setLoading(false);
     }
   };
 
+  const HealthRatingBadge = ({ rating }: { rating: string }) => {
+    const getBadgeColor = () => {
+      switch (rating.toLowerCase()) {
+        case "excellent":
+          return "#4CAF50";
+        case "good":
+          return "#2196F3";
+        case "average":
+          return "#FFC107";
+        case "poor":
+          return "#FF5722";
+        default:
+          return "#9E9E9E";
+      }
+    };
+
+    return (
+      <View style={[styles.healthBadge, { backgroundColor: getBadgeColor() }]}>
+        <Text style={styles.healthBadgeText}>{rating}</Text>
+      </View>
+    );
+  };
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.headerText}>Fruit/Vegetable Detection</Text>
-
-      <View style={styles.buttonContainer}>
-        <Button title="Pick an image from camera roll" onPress={pickImage} color="#4CAF50" />
-      </View>
-
-      <View style={styles.buttonContainer}>
-        <Button title="Take a photo" onPress={takePhoto} color="#2196F3" />
-      </View>
-
-      {image && (
-        <View style={styles.imageContainer}>
-          <Image source={{ uri: image }} style={styles.image} />
+    <LinearGradient colors={["#E8F5E9", "#C8E6C9"]} style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.headerContainer}>
+          <Text style={styles.headerText}>Fruit & Veggie Tracker</Text>
         </View>
-      )}
 
-      {loading && (
-        <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
-      )}
+        <View style={styles.actionContainer}>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.galleryButton]}
+            onPress={pickImage}
+          >
+            <Upload color="white" size={24} />
+            <Text style={styles.actionButtonText}>Gallery</Text>
+          </TouchableOpacity>
 
-      {nutritionData && !loading && (
-        <View style={styles.nutritionContainer}>
-          <Text style={styles.nutritionTitle}>Nutrition Data for {nutritionData.food_item}:</Text>
-          <Text style={styles.nutritionText}>Calories: {nutritionData.calories} kcal</Text>
-          <Text style={styles.nutritionText}>Protein: {nutritionData.protein}g</Text>
-          <Text style={styles.nutritionText}>Carbohydrates: {nutritionData.carbohydrates}g</Text>
-          <Text style={styles.nutritionText}>Fats: {nutritionData.fats}g</Text>
-          <Text style={styles.nutritionText}>Fiber: {nutritionData.fiber}g</Text>
-          <Text style={styles.nutritionText}>Sugar: {nutritionData.sugar}g</Text>
-          <Text style={styles.nutritionText}>Health Rating: {nutritionData.health_rating}</Text>
-          <Text style={styles.nutritionSummary}>Summary: {nutritionData.summary}</Text>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.cameraButton]}
+            onPress={takePhoto}
+          >
+            <Camera color="white" size={24} />
+            <Text style={styles.actionButtonText}>Camera</Text>
+          </TouchableOpacity>
         </View>
-      )}
-    </ScrollView>
+
+        {image && (
+          <View style={styles.imageContainer}>
+            <Image
+              source={{ uri: image }}
+              style={styles.image}
+              blurRadius={loading ? 5 : 0}
+            />
+            {loading && (
+              <View style={styles.loadingOverlay}>
+                <ActivityIndicator size="large" color="#ffffff" />
+              </View>
+            )}
+          </View>
+        )}
+
+        {nutritionData && !loading && (
+          <View style={styles.nutritionContainer}>
+            <View style={styles.nutritionHeader}>
+              <View style={styles.titleContainer}>
+                <Leaf color="#4CAF50" size={24} style={styles.leafIcon} />
+                <Text style={styles.nutritionTitle}>
+                  {nutritionData.food_item}
+                </Text>
+              </View>
+              <HealthRatingBadge rating={nutritionData.health_rating} />
+            </View>
+
+            <View style={styles.nutritionGrid}>
+              <View style={styles.nutritionGridItem}>
+                <Text style={styles.nutritionGridLabel}>Calories</Text>
+                <Text style={styles.nutritionGridValue}>
+                  {nutritionData.calories} kcal
+                </Text>
+              </View>
+              <View style={styles.nutritionGridItem}>
+                <Text style={styles.nutritionGridLabel}>Protein</Text>
+                <Text style={styles.nutritionGridValue}>
+                  {nutritionData.protein}g
+                </Text>
+              </View>
+              <View style={styles.nutritionGridItem}>
+                <Text style={styles.nutritionGridLabel}>Carbs</Text>
+                <Text style={styles.nutritionGridValue}>
+                  {nutritionData.carbohydrates}g
+                </Text>
+              </View>
+              <View style={styles.nutritionGridItem}>
+                <Text style={styles.nutritionGridLabel}>Fiber</Text>
+                <Text style={styles.nutritionGridValue}>
+                  {nutritionData.fiber}g
+                </Text>
+              </View>
+            </View>
+
+            <Text style={styles.nutritionSummary}>{nutritionData.summary}</Text>
+          </View>
+        )}
+      </ScrollView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 50,
+  },
+  headerContainer: {
+    width: "100%",
+    marginBottom: 30,
+    alignItems: "center",
   },
   headerText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#333',
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#2E7D32",
+    letterSpacing: 1,
   },
-  buttonContainer: {
-    marginVertical: 10,
-    width: '100%',
-    borderRadius: 10,
+  actionContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    marginBottom: 30,
+  },
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "48%",
+    paddingVertical: 15,
+    borderRadius: 15,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  galleryButton: {
+    backgroundColor: "#4CAF50",
+  },
+  cameraButton: {
+    backgroundColor: "#2196F3",
+  },
+  actionButtonText: {
+    color: "white",
+    marginLeft: 10,
+    fontSize: 16,
+    fontWeight: "600",
   },
   imageContainer: {
-    marginVertical: 20,
+    width: width - 40,
+    height: width - 40,
+    borderRadius: 20,
+    overflow: "hidden",
+    marginBottom: 30,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   image: {
-    width: 200,
-    height: 200,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#ddd',
-    marginBottom: 20,
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
   },
-  loader: {
-    marginVertical: 20,
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   nutritionContainer: {
-    backgroundColor: '#f9f9f9',
+    width: "100%",
+    backgroundColor: "white",
+    borderRadius: 20,
     padding: 20,
-    borderRadius: 10,
-    width: '100%',
-    marginTop: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
     elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  nutritionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  titleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  leafIcon: {
+    marginRight: 10,
   },
   nutritionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#333",
   },
-  nutritionText: {
+  healthBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 15,
+  },
+  healthBadgeText: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  nutritionGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  nutritionGridItem: {
+    alignItems: "center",
+    width: "22%",
+  },
+  nutritionGridLabel: {
+    color: "#888",
+    fontSize: 12,
+    marginBottom: 5,
+  },
+  nutritionGridValue: {
     fontSize: 16,
-    marginVertical: 5,
-    color: '#555',
+    fontWeight: "600",
+    color: "#333",
   },
   nutritionSummary: {
     fontSize: 14,
-    marginTop: 10,
-    fontStyle: 'italic',
-    color: '#888',
+    color: "#666",
+    fontStyle: "italic",
+    textAlign: "center",
   },
 });
 

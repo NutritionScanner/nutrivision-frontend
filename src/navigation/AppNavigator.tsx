@@ -9,14 +9,64 @@ import HomeScreen from "../screens/HomeScreen";
 import BarcodeScanner from "../components/BarcodeScanner";
 import FoodDetectionScreen from "../components/FoodDetectionScreen";
 import FruitVegetableDetectionScreen from "../components/FruitVegetableDetectionScreen";
-import OnboardingSwiper from "../screens/onBoardingSwiper";
+import OnboardingSwiper from "src/screens/onBoardingSwiper";
+import InitialOnboardingScreen from "../screens/InitialOnboardingScreen";
+import GenderSelectionScreen from "../screens/GenderSelectionScreen";
+import AgeSelectionScreen from "../screens/AgeSelectionScreen";
+import HeightSelectionScreen from "../screens/HeightSelectionScreen";
+import WeightSelectionScreen from "src/screens/CurrentWeightScreen";
+import GoalWeightScreen from "src/screens/GoalWeightScreen";
+// Define the param list for the stack navigator
+type RootStackParamList = {
+  InitialOnboarding: undefined;
+  GenderSelection: undefined;
+  AgeSelection: undefined;
+  HeightSelection: undefined;
+  CurrentWeight: undefined;
+  // This is the important part - match the expected props
+  GoalWeight: { currentWeight: number };
+  Onboarding: undefined;
+  Login: undefined;
+  Signup: undefined;
+  Home: undefined;
+  BarcodeScanner: undefined;
+  FoodDetection: undefined;
+  FruitVegetableDetection: undefined;
+  NextScreen: { currentWeight: number; goalWeight: number };
+};
 
-const Stack = createStackNavigator();
+// Pass the RootStackParamList to createStackNavigator
+const Stack = createStackNavigator<RootStackParamList>();
 
 const AppNavigator = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Onboarding">
+      <Stack.Navigator initialRouteName="InitialOnboarding">
+        <Stack.Screen
+          name="InitialOnboarding"
+          component={InitialOnboardingScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="GenderSelection"
+          component={GenderSelectionScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="AgeSelection"
+          component={AgeSelectionScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="HeightSelection"
+          component={HeightSelectionScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="CurrentWeight"
+          component={WeightSelectionScreen}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="Onboarding"
           component={OnboardingSwiper}

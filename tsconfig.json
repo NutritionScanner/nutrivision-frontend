@@ -8,25 +8,13 @@
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "@env": [
-        "./src/types/env.d.ts"
-      ]
+      "@env": ["./src/types/env.d.ts"]
     },
-    "typeRoots": [
-      "./src/types",
-      "./node_modules/@types"
-    ],
-    "lib": [
-      "esnext"
-    ],
+    "typeRoots": ["./src/types", "./node_modules/@types"],
+    "lib": ["esnext"],
     "resolveJsonModule": true
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx"
-  ],
-  "exclude": [
-    "node_modules"
-  ],
-  "extends": "expo/tsconfig.base"
+  "include": ["**/*.ts", "**/*.tsx", "nativewind.d.ts", "src"],
+  "exclude": ["node_modules"],
+  "extends": "./node_modules/expo/tsconfig.base"
 }

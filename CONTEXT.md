@@ -13,8 +13,13 @@ NutriVisionF/
 │  ├─ onboardingScreenPhotos/
 │  │  ├─ doritos.jpg
 │  │  └─ foodItem.jpg
+│  ├─ videos/
+│  │  ├─ background.mp4
+│  │  └─ background2.mp4
 │  ├─ adaptive-icon.png
 │  ├─ favicon.png
+│  ├─ green_apple_bg.png
+│  ├─ green_apple.jpg
 │  ├─ icon.png
 │  ├─ monitor_progress.png
 │  ├─ monitor_progress.webp
@@ -37,6 +42,7 @@ NutriVisionF/
 │  │  ├─ FoodItemsScreen.tsx
 │  │  ├─ FruitsVegetablesScreen.tsx
 │  │  ├─ HomeScreen.tsx
+│  │  ├─ InitialOnboardingScreen.tsx
 │  │  ├─ LoginScreen.tsx
 │  │  ├─ OnBoardingScreen1.tsx
 │  │  ├─ onBoardingSwiper.tsx

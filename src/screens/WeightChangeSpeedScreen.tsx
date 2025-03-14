@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,32 +8,54 @@ import {
   FlatList,
   Dimensions,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+
 const { width, height } = Dimensions.get("window");
 
 type RootStackParamList = {
-  HeightSelection: undefined;
-  WeightSelection: undefined;
-  GoalWeight: { currentWeight: number }; // Change "weight" to "currentWeight"
+  GoalWeight: { goalType: string; goalWeight: number; currentWeight: number };
+  SummaryScreen: {
+    speed: number;
+    goalType: string;
+    goalWeight: number;
+    currentWeight: number;
+  };
+  WeightChangeSpeedScreen: {
+    goalType: string;
+    goalWeight: number;
+    currentWeight: number;
+  };
 };
 
-type CurrentWeightScreenNavigationProp = StackNavigationProp<
-  RootStackParamList,
-  "WeightSelection"
->;
+const WeightChangeSpeedScreen: React.FC = () => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const route = useRoute();
+  const { goalType, goalWeight, currentWeight } = route.params as {
+    goalType: string;
+    goalWeight: number;
+    currentWeight: number;
+  };
 
-const CurrentWeightScreen = () => {
-  const navigation = useNavigation<CurrentWeightScreenNavigationProp>();
-  const [selectedWeight, setSelectedWeight] = useState<number | null>(72);
+  const [speed, setSpeed] = useState<number | null>(1);
   const [modalVisible, setModalVisible] = useState(false);
 
-  // Generate weight options from 40kg to 150kg
-  const weightOptions = Array.from({ length: 111 }, (_, i) => 40 + i);
+  const minSpeed = 0.1;
+  const maxSpeed = 3;
+
+  const speedOptions = Array.from(
+    { length: Math.round((maxSpeed - minSpeed) / 0.1) + 1 },
+    (_, i) => (minSpeed + i * 0.1).toFixed(1)
+  );
 
   const handleConfirm = () => {
-    if (selectedWeight !== null) {
-      navigation.navigate("GoalWeight", { currentWeight: selectedWeight });
+    if (speed !== null) {
+      navigation.navigate("SummaryScreen", {
+        speed,
+        goalType,
+        goalWeight,
+        currentWeight,
+      });
     }
   };
 
@@ -41,44 +63,57 @@ const CurrentWeightScreen = () => {
     setModalVisible(!modalVisible);
   };
 
-  const selectWeight = (weight: number) => {
-    setSelectedWeight(weight);
+  const selectSpeed = (value: number) => {
+    setSpeed(value);
     setModalVisible(false);
+  };
+
+  const getSpeedCategory = (speed: number) => {
+    if (speed <= 0.2) return { label: "Slow & Steady", color: "green" };
+    if (speed <= 0.9) return { label: "Moderate", color: "orange" }; // orange
+    return { label: "Aggressive", color: "#B22222" }; // Dark Red
   };
 
   return (
     <View style={styles.container}>
-      {/* Top Row */}
       <View style={styles.topRowContainer}>
-        {/* Back Button */}
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
           <Text style={styles.backText}>&lt;</Text>
         </TouchableOpacity>
-        {/* Progress Bar */}
         <View style={styles.progressBar}>
           <View style={styles.progress} />
         </View>
       </View>
 
-      {/* Title */}
-      <Text style={styles.title}>What's your current weight?</Text>
+      <Text style={styles.title}>
+        How fast do you want to {goalType} the weight?
+      </Text>
 
-      {/* Weight Selection */}
       <TouchableOpacity
-        style={styles.weightSelector}
+        style={styles.selector}
         onPress={toggleModal}
         activeOpacity={0.7}
       >
-        <Text style={styles.weightText}>
-          {selectedWeight ? `${selectedWeight} kg` : "Select weight"}
+        <Text style={styles.selectorText}>
+          {speed ? `${speed} kg/week` : "Select speed"}
         </Text>
         <Text style={styles.dropdownArrow}>▼</Text>
       </TouchableOpacity>
 
-      {/* Weight Selection Modal */}
+      {speed !== null && (
+        <Text
+          style={[
+            styles.categoryText,
+            { color: getSpeedCategory(speed).color },
+          ]}
+        >
+          {getSpeedCategory(speed).label}
+        </Text>
+      )}
+
       <Modal
         animationType="slide"
         transparent={true}
@@ -92,36 +127,24 @@ const CurrentWeightScreen = () => {
         >
           <View style={styles.modalContent}>
             <FlatList
-              data={weightOptions}
+              data={speedOptions}
               keyExtractor={(item) => item.toString()}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={[
-                    styles.optionItem,
-                    selectedWeight === item && styles.selectedOption,
-                  ]}
-                  onPress={() => selectWeight(item)}
+                  style={styles.optionItem}
+                  onPress={() => selectSpeed(parseFloat(item))}
                 >
-                  <Text
-                    style={[
-                      styles.optionText,
-                      selectedWeight === item && styles.selectedOptionText,
-                    ]}
-                  >
-                    {item} kg
-                  </Text>
+                  <Text style={styles.optionText}>{item} kg/week</Text>
                 </TouchableOpacity>
               )}
               showsVerticalScrollIndicator={true}
-              contentContainerStyle={styles.listContent}
             />
           </View>
         </TouchableOpacity>
       </Modal>
 
-      {/* Confirm Button */}
       <TouchableOpacity
-        disabled={selectedWeight === null}
+        disabled={speed === null}
         onPress={handleConfirm}
         style={styles.confirmButton}
       >
@@ -152,7 +175,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   progress: {
-    width: "50%", // 50% progress indicates we're on the Weight Selection step
+    width: "75%",
     height: "100%",
     backgroundColor: "black",
     borderRadius: 8,
@@ -168,8 +191,6 @@ const styles = StyleSheet.create({
   backText: {
     color: "white",
     fontSize: 20,
-    marginLeft: -2,
-    marginTop: -2,
   },
   title: {
     color: "black",
@@ -179,7 +200,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: 20,
   },
-  weightSelector: {
+  selector: {
     marginTop: 50,
     marginHorizontal: 20,
     padding: 20,
@@ -189,13 +210,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  weightText: {
+  selectorText: {
     fontSize: 20,
     color: "black",
   },
   dropdownArrow: {
     fontSize: 16,
     color: "gray",
+  },
+  categoryText: {
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 18,
   },
   modalOverlay: {
     flex: 1,
@@ -209,24 +235,15 @@ const styles = StyleSheet.create({
     maxHeight: height * 0.6,
     padding: 10,
   },
-  listContent: {
-    paddingHorizontal: 10,
-  },
   optionItem: {
     padding: 15,
     borderBottomWidth: 1,
     borderBottomColor: "#F0F0F0",
   },
-  selectedOption: {
-    backgroundColor: "#F8F8F8",
-  },
   optionText: {
     fontSize: 18,
     color: "black",
     textAlign: "center",
-  },
-  selectedOptionText: {
-    fontWeight: "bold",
   },
   confirmButton: {
     marginTop: 60,
@@ -243,4 +260,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CurrentWeightScreen;
+export default WeightChangeSpeedScreen;

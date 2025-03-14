@@ -14,8 +14,10 @@ import InitialOnboardingScreen from "../screens/InitialOnboardingScreen";
 import GenderSelectionScreen from "../screens/GenderSelectionScreen";
 import AgeSelectionScreen from "../screens/AgeSelectionScreen";
 import HeightSelectionScreen from "../screens/HeightSelectionScreen";
-import WeightSelectionScreen from "src/screens/CurrentWeightScreen";
+import CurrentWeightScreen from "src/screens/CurrentWeightScreen";
 import GoalWeightScreen from "src/screens/GoalWeightScreen";
+import WeightChangeSpeedScreen from "src/screens/WeightChangeSpeedScreen";
+import SummaryScreen from "src/screens/SummaryScreen";
 // Define the param list for the stack navigator
 type RootStackParamList = {
   InitialOnboarding: undefined;
@@ -32,7 +34,17 @@ type RootStackParamList = {
   BarcodeScanner: undefined;
   FoodDetection: undefined;
   FruitVegetableDetection: undefined;
-  NextScreen: { currentWeight: number; goalWeight: number };
+  WeightChangeSpeed: {
+    currentWeight: number;
+    goalWeight: number;
+    goalType: string;
+  };
+  SummaryScreen: {
+    speed: number;
+    goalWeight: number;
+    goalType: string;
+    currentWeight: number;
+  };
 };
 
 // Pass the RootStackParamList to createStackNavigator
@@ -64,8 +76,23 @@ const AppNavigator = () => {
         />
         <Stack.Screen
           name="CurrentWeight"
-          component={WeightSelectionScreen}
+          component={CurrentWeightScreen}
           options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="GoalWeight"
+          component={GoalWeightScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="WeightChangeSpeed"
+          component={WeightChangeSpeedScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+        name="SummaryScreen"
+        component={SummaryScreen}
+        options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Onboarding"

@@ -90,9 +90,9 @@ const AppNavigator = () => {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-        name="SummaryScreen"
-        component={SummaryScreen}
-        options={{ headerShown: false }}
+          name="SummaryScreen"
+          component={SummaryScreen}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Onboarding"
@@ -102,32 +102,32 @@ const AppNavigator = () => {
         <Stack.Screen
           name="Login"
           component={LoginScreen}
-          options={{
-            title: "Login",
-            headerLeft: () => null,
-          }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Signup"
           component={SignupScreen}
-          options={{
-            title: "Signup",
-            headerLeft: () => null,
-          }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{
-            title: "Home",
-            headerLeft: () => null,
-          }}
+          options={{ headerShown: false }}
         />
-        <Stack.Screen name="BarcodeScanner" component={BarcodeScanner} />
-        <Stack.Screen name="FoodDetection" component={FoodDetectionScreen} />
+        <Stack.Screen
+          name="BarcodeScanner"
+          component={BarcodeScanner}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="FoodDetection"
+          component={FoodDetectionScreen}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="FruitVegetableDetection"
           component={FruitVegetableDetectionScreen}
+          options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

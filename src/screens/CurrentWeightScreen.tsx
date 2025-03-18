@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,14 +8,23 @@ import {
   FlatList,
   Dimensions,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const { width, height } = Dimensions.get("window");
 
 type RootStackParamList = {
   HeightSelection: undefined;
-  WeightSelection: undefined;
-  GoalWeight: { currentWeight: number }; // Change "weight" to "currentWeight"
+  WeightSelection: {
+    height: number;
+    heightImperial: { feet: number; inches: number };
+  };
+  GoalWeight: {
+    currentWeight: number;
+    height: number;
+    heightImperial: { feet: number; inches: number };
+  };
 };
 
 type CurrentWeightScreenNavigationProp = StackNavigationProp<
@@ -23,17 +32,71 @@ type CurrentWeightScreenNavigationProp = StackNavigationProp<
   "WeightSelection"
 >;
 
+type CurrentWeightScreenRouteProp = RouteProp<
+  RootStackParamList,
+  "WeightSelection"
+>;
+
 const CurrentWeightScreen = () => {
   const navigation = useNavigation<CurrentWeightScreenNavigationProp>();
+  const route = useRoute<CurrentWeightScreenRouteProp>();
+
+  // Extract height data from route params
+  const { height, heightImperial } = route.params || {
+    height: 0,
+    heightImperial: { feet: 0, inches: 0 },
+  };
+
   const [selectedWeight, setSelectedWeight] = useState<number | null>(72);
   const [modalVisible, setModalVisible] = useState(false);
+
+  // AsyncStorage key
+  const WEIGHT_KEY = "userWeight";
+
+  // Load saved weight on component mount
+  useEffect(() => {
+    const loadSavedWeight = async () => {
+      try {
+        const savedWeight = await AsyncStorage.getItem(WEIGHT_KEY);
+        if (savedWeight !== null) {
+          setSelectedWeight(Number(savedWeight));
+          console.log("Loaded weight from storage:", savedWeight);
+        }
+      } catch (error) {
+        console.error("Error loading weight data:", error);
+      }
+    };
+
+    loadSavedWeight();
+  }, []);
+
+  // Save weight to AsyncStorage
+  const saveWeightData = async (weight: number) => {
+    try {
+      await AsyncStorage.setItem(WEIGHT_KEY, weight.toString());
+      console.log("Weight saved successfully:", weight);
+    } catch (error) {
+      console.error("Error saving weight data:", error);
+    }
+  };
 
   // Generate weight options from 40kg to 150kg
   const weightOptions = Array.from({ length: 111 }, (_, i) => 40 + i);
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (selectedWeight !== null) {
-      navigation.navigate("GoalWeight", { currentWeight: selectedWeight });
+      // Save weight to AsyncStorage before navigating
+      await saveWeightData(selectedWeight);
+
+      // Navigate to next screen with all necessary data
+      navigation.navigate("GoalWeight", {
+        currentWeight: selectedWeight,
+        height: height,
+        heightImperial: heightImperial,
+      });
+      console.log("Current weight:", selectedWeight);
+      console.log("Height in cm:", height);
+      console.log("Height imperial:", heightImperial);
     }
   };
 
@@ -44,6 +107,16 @@ const CurrentWeightScreen = () => {
   const selectWeight = (weight: number) => {
     setSelectedWeight(weight);
     setModalVisible(false);
+  };
+
+  // Helper function to clear storage (for testing)
+  const clearWeightData = async () => {
+    try {
+      await AsyncStorage.removeItem(WEIGHT_KEY);
+      console.log("Weight data cleared!");
+    } catch (error) {
+      console.error("Error clearing weight data:", error);
+    }
   };
 
   return (
@@ -114,6 +187,12 @@ const CurrentWeightScreen = () => {
               )}
               showsVerticalScrollIndicator={true}
               contentContainerStyle={styles.listContent}
+              initialScrollIndex={weightOptions.indexOf(selectedWeight ?? 72)}
+              getItemLayout={(data, index) => ({
+                length: 51, // Item height plus padding
+                offset: 51 * index,
+                index,
+              })}
             />
           </View>
         </TouchableOpacity>
@@ -123,7 +202,12 @@ const CurrentWeightScreen = () => {
       <TouchableOpacity
         disabled={selectedWeight === null}
         onPress={handleConfirm}
-        style={styles.confirmButton}
+        style={[
+          styles.confirmButton,
+          {
+            backgroundColor: selectedWeight === null ? "#999" : "black",
+          },
+        ]}
       >
         <Text style={styles.confirmText}>Confirm</Text>
       </TouchableOpacity>

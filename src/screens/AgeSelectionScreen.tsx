@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   Dimensions,
   StyleSheet,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 
@@ -26,9 +27,27 @@ const AgeSelectionScreen = () => {
   const navigation = useNavigation<AgeSelectionScreenNavigationProp>();
   const [age, setAge] = useState<string>("");
 
-  const handleConfirm = () => {
+  useEffect(() => {
+    const loadAge = async () => {
+      try {
+        const storedAge = await AsyncStorage.getItem("userAge");
+        if (storedAge) setAge(storedAge);
+      } catch (error) {
+        console.error("Error loading age from storage:", error);
+      }
+    };
+    loadAge();
+  }, []);
+
+  const handleConfirm = async () => {
     if (age && !isNaN(Number(age))) {
-      navigation.navigate("HeightSelection", { age: Number(age) });
+      try {
+        await AsyncStorage.setItem("userAge", age);
+        navigation.navigate("HeightSelection", { age: Number(age) });
+        console.log("Age saved:", age);
+      } catch (error) {
+        console.error("Error saving age:", error);
+      }
     }
   };
 
@@ -94,7 +113,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   progress: {
-    width: "35%", // 40% progress indicates we're on the Age Selection step
+    width: "35%",
     height: "100%",
     backgroundColor: "black",
     borderRadius: 8,

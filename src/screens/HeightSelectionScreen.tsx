@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,12 +10,17 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("window");
 
 type RootStackParamList = {
   HeightSelection: { age: number };
-  CurrentWeight: { age: number; height: number };
+  CurrentWeight: {
+    age: number;
+    height: number;
+    heightImperial: { feet: number; inches: number };
+  };
 };
 
 type HeightSelectionScreenNavigationProp = StackNavigationProp<
@@ -37,10 +42,91 @@ const HeightSelectionScreen = () => {
   const [centimeters, setCentimeters] = useState<number>(175); // Default to 175 cm
   const [showCmPicker, setShowCmPicker] = useState<boolean>(false);
 
+  // AsyncStorage Keys
+  const HEIGHT_KEY = "userHeight";
+  const UNIT_KEY = "heightUnit";
+
   // FlatList refs for scrolling to selected value
   const feetListRef = useRef<FlatList>(null);
   const inchesListRef = useRef<FlatList>(null);
   const cmListRef = useRef<FlatList>(null);
+
+  // Helper function to convert cm to feet and inches
+  const convertCmToImperial = (cm: number) => {
+    const totalInches = cm / 2.54;
+    const ft = Math.floor(totalInches / 12);
+    const inch = Math.round(totalInches % 12);
+    return { feet: ft, inches: inch };
+  };
+
+  // Helper function to convert feet and inches to cm
+  const convertImperialToCm = (ft: number, inch: number) => {
+    return Math.round(ft * 30.48 + inch * 2.54);
+  };
+
+  useEffect(() => {
+    const loadHeightData = async () => {
+      try {
+        const savedUnit = await AsyncStorage.getItem(UNIT_KEY);
+        if (savedUnit) setUnit(savedUnit as "Imperial" | "Metric");
+
+        const savedHeightData = await AsyncStorage.getItem(HEIGHT_KEY);
+        if (savedHeightData) {
+          const parsedData = JSON.parse(savedHeightData);
+
+          if (parsedData.imperial) {
+            setFeet(parsedData.imperial.feet);
+            setInches(parsedData.imperial.inches);
+          }
+
+          if (parsedData.metric) {
+            setCentimeters(parsedData.metric);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading height data:", error);
+      }
+    };
+    loadHeightData();
+  }, []);
+
+  // Save height and unit to AsyncStorage
+  const saveHeightData = async () => {
+    try {
+      await AsyncStorage.setItem(UNIT_KEY, unit);
+
+      // Calculate and store both formats
+      const heightImperial =
+        unit === "Imperial"
+          ? { feet, inches }
+          : convertCmToImperial(centimeters);
+
+      const heightMetric =
+        unit === "Metric" ? centimeters : convertImperialToCm(feet, inches);
+
+      await AsyncStorage.setItem(
+        HEIGHT_KEY,
+        JSON.stringify({
+          imperial: heightImperial,
+          metric: heightMetric,
+        })
+      );
+
+      console.log("Height data saved successfully!");
+    } catch (error) {
+      console.error("Error saving height data:", error);
+    }
+  };
+
+  const clearHeightData = async () => {
+    try {
+      await AsyncStorage.removeItem(UNIT_KEY);
+      await AsyncStorage.removeItem(HEIGHT_KEY);
+      console.log("Storage cleared!");
+    } catch (error) {
+      console.error("Error clearing height data:", error);
+    }
+  };
 
   // Check if input is valid
   const isImperialValid = () => {
@@ -52,17 +138,27 @@ const HeightSelectionScreen = () => {
   };
 
   // Confirm button handler
-  const handleConfirm = () => {
-    let heightInCm = 0;
-    if (unit === "Imperial") {
-      // Convert feet and inches to cm: 1 foot = 30.48 cm, 1 inch = 2.54 cm
-      heightInCm = feet * 30.48 + inches * 2.54;
-    } else {
-      heightInCm = centimeters;
-    }
+  const handleConfirm = async () => {
+    // Calculate height in both formats
+    const heightInCm =
+      unit === "Imperial" ? convertImperialToCm(feet, inches) : centimeters;
 
-    // Navigate to next screen with height in cm
-    navigation.navigate("CurrentWeight", { age: 0, height: heightInCm });
+    const heightImperial = {
+      feet: unit === "Imperial" ? feet : convertCmToImperial(centimeters).feet,
+      inches:
+        unit === "Imperial" ? inches : convertCmToImperial(centimeters).inches,
+    };
+
+    await saveHeightData();
+
+    // Navigate to next screen with height in cm and imperial format
+    navigation.navigate("CurrentWeight", {
+      age: 0,
+      height: heightInCm,
+      heightImperial: heightImperial,
+    });
+    console.log("Height in cm:", heightInCm);
+    console.log("Height imperial:", heightImperial);
   };
 
   // Create range arrays
@@ -367,7 +463,7 @@ const styles = StyleSheet.create({
   imperialContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    gap:10,
+    gap: 10,
     paddingHorizontal: 20,
   },
   metricContainer: {

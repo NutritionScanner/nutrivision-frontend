@@ -9,15 +9,15 @@ import {
   ActivityIndicator,
   ScrollView,
   Dimensions,
+  StatusBar,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { detectFruitVegetable } from "../api/api";
-import { LinearGradient } from "expo-linear-gradient";
-import { Camera, Upload, Leaf } from "lucide-react-native";
+import { Camera, Upload, Leaf, ChevronLeft } from "lucide-react-native";
 
 const { width } = Dimensions.get("window");
 
-const FruitVegetableDetectionScreen = () => {
+const FruitVegetableDetectionScreen = ({ navigation }: any) => {
   const [image, setImage] = useState<string | null>(null);
   const [nutritionData, setNutritionData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -33,7 +33,7 @@ const FruitVegetableDetectionScreen = () => {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -90,15 +90,15 @@ const FruitVegetableDetectionScreen = () => {
     const getBadgeColor = () => {
       switch (rating.toLowerCase()) {
         case "excellent":
-          return "#4CAF50";
+          return "#333";
         case "good":
-          return "#2196F3";
+          return "#555";
         case "average":
-          return "#FFC107";
+          return "#777";
         case "poor":
-          return "#FF5722";
+          return "#999";
         default:
-          return "#9E9E9E";
+          return "#000";
       }
     };
 
@@ -110,13 +110,24 @@ const FruitVegetableDetectionScreen = () => {
   };
 
   return (
-    <LinearGradient colors={["#E8F5E9", "#C8E6C9"]} style={styles.container}>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#000" />
+
+      <View style={styles.backButtonContainer}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <ChevronLeft color="#fff" size={24} />
+        </TouchableOpacity>
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.headerContainer}>
-          <Text style={styles.headerText}>Fruit & Veggie Tracker</Text>
+          <Text style={styles.headerText}>Fruit & Veggie Analysis</Text>
         </View>
 
         <View style={styles.actionContainer}>
@@ -156,7 +167,7 @@ const FruitVegetableDetectionScreen = () => {
           <View style={styles.nutritionContainer}>
             <View style={styles.nutritionHeader}>
               <View style={styles.titleContainer}>
-                <Leaf color="#4CAF50" size={24} style={styles.leafIcon} />
+                <Leaf color="#000" size={24} style={styles.leafIcon} />
                 <Text style={styles.nutritionTitle}>
                   {nutritionData.food_item}
                 </Text>
@@ -192,22 +203,47 @@ const FruitVegetableDetectionScreen = () => {
             </View>
 
             <Text style={styles.nutritionSummary}>{nutritionData.summary}</Text>
+
+            <TouchableOpacity style={styles.moreDetailsButton}>
+              <Text style={styles.moreDetailsText}>More Details</Text>
+            </TouchableOpacity>
           </View>
         )}
       </ScrollView>
-    </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#f5f5f5",
+  },
+  backButtonContainer: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    zIndex: 10,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#000",
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
   },
   scrollContainer: {
     flexGrow: 1,
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingTop: 50,
+    paddingTop: 100,
+    paddingBottom: 30,
   },
   headerContainer: {
     width: "100%",
@@ -217,7 +253,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#2E7D32",
+    color: "#000",
     letterSpacing: 1,
   },
   actionContainer: {
@@ -232,18 +268,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: "48%",
     paddingVertical: 15,
-    borderRadius: 15,
-    elevation: 5,
+    borderRadius: 12,
+    elevation: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   galleryButton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#000",
   },
   cameraButton: {
-    backgroundColor: "#2196F3",
+    backgroundColor: "#333",
   },
   actionButtonText: {
     color: "white",
@@ -254,7 +290,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: width - 40,
     height: width - 40,
-    borderRadius: 20,
+    borderRadius: 12,
     overflow: "hidden",
     marginBottom: 30,
     elevation: 5,
@@ -262,6 +298,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+    borderWidth: 1,
+    borderColor: "#ddd",
   },
   image: {
     width: "100%",
@@ -277,13 +315,15 @@ const styles = StyleSheet.create({
   nutritionContainer: {
     width: "100%",
     backgroundColor: "white",
-    borderRadius: 20,
+    borderRadius: 12,
     padding: 20,
-    elevation: 5,
+    elevation: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    borderWidth: 1,
+    borderColor: "#eee",
   },
   nutritionHeader: {
     flexDirection: "row",
@@ -301,12 +341,12 @@ const styles = StyleSheet.create({
   nutritionTitle: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#333",
+    color: "#000",
   },
   healthBadge: {
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 15,
+    borderRadius: 8,
   },
   healthBadgeText: {
     color: "white",
@@ -317,26 +357,40 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    paddingBottom: 20,
   },
   nutritionGridItem: {
     alignItems: "center",
     width: "22%",
   },
   nutritionGridLabel: {
-    color: "#888",
+    color: "#666",
     fontSize: 12,
     marginBottom: 5,
   },
   nutritionGridValue: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
+    color: "#000",
   },
   nutritionSummary: {
     fontSize: 14,
-    color: "#666",
-    fontStyle: "italic",
-    textAlign: "center",
+    color: "#333",
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  moreDetailsButton: {
+    backgroundColor: "#000",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  moreDetailsText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
   },
 });
 

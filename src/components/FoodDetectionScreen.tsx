@@ -9,15 +9,27 @@ import {
   ActivityIndicator,
   ScrollView,
   Dimensions,
+  StatusBar,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { detectFoodItem } from "../api/api";
-import { LinearGradient } from "expo-linear-gradient";
-import { Camera, Upload, RefreshCcw } from "lucide-react-native";
+import { Camera, Upload, ChevronLeft } from "lucide-react-native";
+import { StackNavigationProp } from "@react-navigation/stack";
 
 const { width } = Dimensions.get("window");
 
-const FoodDetectionScreen = () => {
+// Define the navigation type
+type RootStackParamList = {
+  Home: undefined;
+  FoodDetection: undefined;
+  // Add other screens as needed
+};
+
+type FoodDetectionScreenProps = {
+  navigation: StackNavigationProp<RootStackParamList>;
+};
+
+const FoodDetectionScreen = ({ navigation }: FoodDetectionScreenProps) => {
   const [image, setImage] = useState<string | null>(null);
   const [nutritionData, setNutritionData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -33,7 +45,7 @@ const FoodDetectionScreen = () => {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -86,19 +98,24 @@ const FoodDetectionScreen = () => {
     }
   };
 
+  const handleGoBack = () => {
+    navigation.goBack();
+  };
+
   const HealthRatingBadge = ({ rating }: { rating: string }) => {
+    // Use grayscale colors for the health rating badges
     const getBadgeColor = () => {
       switch (rating.toLowerCase()) {
         case "excellent":
-          return "#4CAF50";
+          return "#000000";
         case "good":
-          return "#2196F3";
+          return "#333333";
         case "average":
-          return "#FFC107";
+          return "#666666";
         case "poor":
-          return "#FF5722";
+          return "#999999";
         default:
-          return "#9E9E9E";
+          return "#CCCCCC";
       }
     };
 
@@ -110,12 +127,16 @@ const FoodDetectionScreen = () => {
   };
 
   return (
-    <LinearGradient colors={["#F5F5F5", "#E0E0E0"]} style={styles.container}>
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" />
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.headerContainer}>
+          <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
+            <ChevronLeft color="#FFFFFF" size={24} />
+          </TouchableOpacity>
           <Text style={styles.headerText}>Nutrition Tracker</Text>
         </View>
 
@@ -146,7 +167,7 @@ const FoodDetectionScreen = () => {
             />
             {loading && (
               <View style={styles.loadingOverlay}>
-                <ActivityIndicator size="large" color="#ffffff" />
+                <ActivityIndicator size="large" color="#FFFFFF" />
               </View>
             )}
           </View>
@@ -155,11 +176,17 @@ const FoodDetectionScreen = () => {
         {nutritionData && !loading && (
           <View style={styles.nutritionContainer}>
             <View style={styles.nutritionHeader}>
-              <Text style={styles.nutritionTitle}>
+              <Text
+                style={styles.nutritionTitle}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {nutritionData.food_item}
               </Text>
               <HealthRatingBadge rating={nutritionData.health_rating} />
             </View>
+
+            <View style={styles.divider} />
 
             <View style={styles.nutritionGrid}>
               <View style={styles.nutritionGridItem}>
@@ -188,34 +215,66 @@ const FoodDetectionScreen = () => {
               </View>
             </View>
 
+            <View style={styles.divider} />
+
             <Text style={styles.nutritionSummary}>{nutritionData.summary}</Text>
           </View>
         )}
+
+        {!image && !nutritionData && (
+          <View style={styles.placeholderContainer}>
+            <Camera color="#CCCCCC" size={80} />
+            <Text style={styles.placeholderText}>
+              Take a photo or upload an image to analyze food nutrition
+            </Text>
+          </View>
+        )}
       </ScrollView>
-    </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#FFFFFF",
   },
   scrollContainer: {
     flexGrow: 1,
     alignItems: "center",
     paddingHorizontal: 20,
     paddingTop: 50,
+    paddingBottom: 30,
   },
   headerContainer: {
     width: "100%",
     marginBottom: 30,
+    flexDirection: "row",
     alignItems: "center",
+    position: "relative",
   },
   headerText: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "700",
-    color: "#333",
-    letterSpacing: 1,
+    color: "#000000",
+    textAlign: "center",
+    flex: 1,
+  },
+  backButton: {
+    position: "absolute",
+    left: 0,
+    zIndex: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#000000",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
   },
   actionContainer: {
     flexDirection: "row",
@@ -229,18 +288,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: "48%",
     paddingVertical: 15,
-    borderRadius: 15,
-    elevation: 5,
+    borderRadius: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3,
   },
   galleryButton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#000000",
   },
   cameraButton: {
-    backgroundColor: "#2196F3",
+    backgroundColor: "#000000",
   },
   actionButtonText: {
     color: "white",
@@ -251,82 +310,106 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: width - 40,
     height: width - 40,
-    borderRadius: 20,
+    borderRadius: 16,
     overflow: "hidden",
     marginBottom: 30,
-    elevation: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3,
   },
   image: {
     width: "100%",
     height: "100%",
     resizeMode: "cover",
+    backgroundColor: "#F0F0F0",
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0,0,0,0.6)",
     justifyContent: "center",
     alignItems: "center",
   },
   nutritionContainer: {
     width: "100%",
-    backgroundColor: "white",
-    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
     padding: 20,
-    elevation: 5,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
   nutritionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 15,
   },
   nutritionTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "700",
-    color: "#333",
+    color: "#000000",
+    flex: 1,
   },
   healthBadge: {
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 15,
+    borderRadius: 12,
+    marginLeft: 8,
   },
   healthBadgeText: {
     color: "white",
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: 12,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#E0E0E0",
+    width: "100%",
+    marginVertical: 15,
   },
   nutritionGrid: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 20,
   },
   nutritionGridItem: {
     alignItems: "center",
     width: "22%",
   },
   nutritionGridLabel: {
-    color: "#888",
+    color: "#666666",
     fontSize: 12,
     marginBottom: 5,
   },
   nutritionGridValue: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
+    fontWeight: "700",
+    color: "#000000",
   },
   nutritionSummary: {
     fontSize: 14,
-    color: "#666",
-    fontStyle: "italic",
+    color: "#333333",
+    lineHeight: 20,
+    textAlign: "left",
+  },
+  placeholderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 50,
+    padding: 20,
+  },
+  placeholderText: {
+    fontSize: 16,
+    color: "#999999",
     textAlign: "center",
+    marginTop: 20,
+    maxWidth: 250,
   },
 });
 

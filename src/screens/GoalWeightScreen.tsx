@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,14 +7,20 @@ import {
   Modal,
   FlatList,
   Dimensions,
+  Alert,
 } from "react-native";
 import { useNavigation, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width, height } = Dimensions.get("window");
 
 type RootStackParamList = {
-  WeightChangeSpeed: { goalWeight: number; goalType: string, currentWeight: number };
+  WeightChangeSpeed: {
+    goalWeight: number;
+    goalType: string;
+    currentWeight: number;
+  };
   GoalWeight: { currentWeight: number };
 };
 
@@ -46,9 +52,59 @@ const GoalWeightScreen: React.FC<Props> = ({ route }) => {
     (_, i) => minGoalWeight + i
   );
 
+  // Load saved data when component mounts
+  useEffect(() => {
+    loadSavedData();
+  }, []);
+
+  const loadSavedData = async () => {
+    try {
+      const savedGoalWeight = await AsyncStorage.getItem("goalWeight");
+      if (savedGoalWeight !== null) {
+        setGoalWeight(parseInt(savedGoalWeight));
+        console.log("Loaded goal weight:", savedGoalWeight);
+      }
+    } catch (error) {
+      console.error("Error loading saved data:", error);
+    }
+  };
+
+  const saveUserData = async (
+    goalWeight: number,
+    goalType: string,
+    weightDifference: number
+  ) => {
+    try {
+      await AsyncStorage.setItem("goalWeight", goalWeight.toString());
+      await AsyncStorage.setItem("goalType", goalType);
+      await AsyncStorage.setItem(
+        "weightDifference",
+        Math.abs(weightDifference).toString()
+      );
+
+      // Log the saved data for debugging
+      console.log("Saved Data:");
+      console.log("Goal Weight:", goalWeight);
+      console.log("Goal Type:", goalType);
+      console.log("Weight Difference:", Math.abs(weightDifference));
+
+      // You can add a confirmation message if needed
+      // Alert.alert("Success", "Your goal weight has been saved!");
+    } catch (error) {
+      console.error("Error saving data:", error);
+      Alert.alert("Error", "Failed to save your goal weight.");
+    }
+  };
+
   const handleConfirm = () => {
     if (goalWeight !== null) {
       const goalType = goalWeight > currentWeight ? "gain" : "lose";
+      const weightDifference = goalWeight - currentWeight;
+
+      // Save data to AsyncStorage
+      saveUserData(goalWeight, goalType, weightDifference);
+
+      // Navigate to next screen
       navigation.navigate("WeightChangeSpeed", {
         goalWeight,
         goalType,

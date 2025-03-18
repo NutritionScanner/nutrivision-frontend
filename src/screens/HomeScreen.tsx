@@ -1,18 +1,30 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Icon from 'react-native-vector-icons/Ionicons'; // <button class="citation-flag" data-index="6"><button class="citation-flag" data-index="7"><button class="citation-flag" data-index="8">
-import { StackNavigationProp } from '@react-navigation/stack';
-import Svg, { Circle } from 'react-native-svg';
-import { ScrollView } from 'react-native';
+import React from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  StatusBar,
+} from "react-native";
+import Icon from "react-native-vector-icons/Ionicons";
+import { StackNavigationProp } from "@react-navigation/stack";
+import Svg, { Circle } from "react-native-svg";
+import { ScrollView } from "react-native";
 
 interface CircularProgressProps {
   value: number;
   maxValue: number;
   title: string;
+  color?: string;
 }
 
-const CircularProgress = ({ value, maxValue, title }: CircularProgressProps) => {
+const CircularProgress = ({
+  value,
+  maxValue,
+  title,
+  color = "#333",
+}: CircularProgressProps) => {
   const progress = (value / maxValue) * 100;
   const radius = 40;
   const circumference = 2 * Math.PI * radius;
@@ -33,7 +45,7 @@ const CircularProgress = ({ value, maxValue, title }: CircularProgressProps) => 
           cx="50"
           cy="50"
           r={radius}
-          stroke="#4CAF50"
+          stroke={color}
           strokeWidth="8"
           fill="transparent"
           strokeDasharray={circumference}
@@ -41,7 +53,9 @@ const CircularProgress = ({ value, maxValue, title }: CircularProgressProps) => 
           strokeLinecap="round"
         />
       </Svg>
-      <Text style={styles.progressText}>{value}/{maxValue}</Text>
+      <Text style={styles.progressText}>
+        {value}/{maxValue}
+      </Text>
       <Text style={styles.progressTitle}>{title}</Text>
     </View>
   );
@@ -52,13 +66,13 @@ const getDynamicGreeting = () => {
   const currentHour = new Date().getHours();
 
   if (currentHour >= 5 && currentHour < 12) {
-    return 'Good Morning';
+    return "Good Morning";
   } else if (currentHour >= 12 && currentHour < 17) {
-    return 'Good Afternoon';
+    return "Good Afternoon";
   } else if (currentHour >= 17 && currentHour < 21) {
-    return 'Good Evening';
+    return "Good Evening";
   } else {
-    return 'Good Night';
+    return "Good Night";
   }
 };
 
@@ -67,203 +81,369 @@ type RootStackParamList = {
   BarcodeScanner: undefined;
   FoodDetection: undefined;
   FruitVegetableDetection: undefined;
+  Profile: undefined;
 };
 
-type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
+type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, "Home">;
 
 interface Props {
   navigation: HomeScreenNavigationProp;
 }
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
+  const greeting = getDynamicGreeting();
+  const userName = "Alex"; // Replace with actual user name from your auth system
 
   return (
-    <ScrollView 
-    style={{ flex: 1 }} 
-    contentContainerStyle={styles.scrollContainer} // <button class="citation-flag" data-index="6"><button class="citation-flag" data-index="7">
-    >
-    <LinearGradient 
-      colors={['#4CAF50', '#8BC34A']} 
-      style={styles.gradient}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
-      {/* Header with vector icons */}
-      <View style={styles.header}>
-        {/* <View>
-          <Text style={styles.greeting}>Good Morning!</Text>
-          <Text style={styles.appName}>NutriVision</Text>
-        </View> */}
-        {/* <TouchableOpacity style={styles.profile}>
-          <Icon name="person-circle-outline" size={50} color="white" />
-        </TouchableOpacity> */}
-      </View>
+    <View style={styles.mainContainer}>
+      <StatusBar barStyle="light-content" backgroundColor="#000" />
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContainer}
+      >
+        {/* Header with profile and greeting */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greeting}>{greeting}</Text>
+            <Text style={styles.userName}>{userName}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={() => navigation.navigate("Profile")}
+          >
+            <Icon name="person" size={20} color="#fff" />
+          </TouchableOpacity>
+        </View>
 
-      {/* Feature Cards */}
-      <View style={styles.cardsContainer}>
-        {/* Barcode Scanner Card */}
-        <TouchableOpacity 
-          style={styles.featureCard}
-          onPress={() => navigation.navigate('BarcodeScanner')}
-          activeOpacity={0.8}
-        >
-          <Icon name="barcode-outline" size={60} color="#4CAF50" />
-          <Text style={styles.cardTitle}>Scan Barcode</Text>
-          <Text style={styles.cardDesc}>Instant nutritional info</Text>
-          <Icon 
-            name="chevron-forward-outline" 
-            size={24} 
-            color="#4CAF50" 
-            style={styles.cardChevron}
-          />
-        </TouchableOpacity>
+        {/* Daily Summary Card */}
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryTitle}>Today's Summary</Text>
+          <View style={styles.summaryContent}>
+            <View style={styles.summaryItem}>
+              <Icon name="flame-outline" size={24} color="#333" />
+              <Text style={styles.summaryValue}>1500</Text>
+              <Text style={styles.summaryLabel}>Calories</Text>
+            </View>
+            <View style={styles.summaryDivider} />
+            <View style={styles.summaryItem}>
+              <Icon name="barbell-outline" size={24} color="#333" />
+              <Text style={styles.summaryValue}>45</Text>
+              <Text style={styles.summaryLabel}>Protein (g)</Text>
+            </View>
+            <View style={styles.summaryDivider} />
+            <View style={styles.summaryItem}>
+              <Icon name="water-outline" size={24} color="#333" />
+              <Text style={styles.summaryValue}>3/8</Text>
+              <Text style={styles.summaryLabel}>Water (cups)</Text>
+            </View>
+          </View>
+        </View>
 
-        {/* 2. Food Detection <button class="citation-flag" data-index="3"><button class="citation-flag" data-index="5"> */}
-        <TouchableOpacity 
-          style={styles.featureCard}
-          onPress={() => navigation.navigate('FoodDetection')}
-        >
-          <Icon name="fast-food-outline" size={60} color="#4CAF50" />
-          <Text style={styles.cardTitle}>Detect Food</Text>
-          <Text style={styles.cardDesc}>AI-powered meal analysis</Text>
-          <Icon 
-            name="chevron-forward-outline" 
-            size={24} 
-            color="#4CAF50" 
-            style={styles.cardChevron}
-          />
-        </TouchableOpacity>
+        {/* Feature Title */}
+        <Text style={styles.sectionTitle}>Nutrition Tools</Text>
 
-        {/* 3. Fruit/Vegetable Detection <button class="citation-flag" data-index="4"><button class="citation-flag" data-index="6"> */}
-        <TouchableOpacity 
-          style={styles.featureCard}
-          onPress={() => navigation.navigate('FruitVegetableDetection')}
-        >
-          <Icon name="leaf-outline" size={60} color="#4CAF50" />
-          <Text style={styles.cardTitle}>Fruits/Vegetable </Text>
-          <Text style={styles.cardDesc}>Get nutrition value of them</Text>
-          <Icon 
-            name="chevron-forward-outline" 
-            size={24} 
-            color="#4CAF50" 
-            style={styles.cardChevron}
-          />
-        </TouchableOpacity>
+        {/* Feature Cards */}
+        <View style={styles.cardsContainer}>
+          {/* Barcode Scanner Card */}
+          <TouchableOpacity
+            style={styles.featureCard}
+            onPress={() => navigation.navigate("BarcodeScanner")}
+            activeOpacity={0.8}
+          >
+            <View style={styles.cardIconContainer}>
+              <Icon name="barcode-outline" size={24} color="#fff" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Scan Barcode</Text>
+              <Text style={styles.cardDesc}>
+                Get instant nutritional information
+              </Text>
+            </View>
+            <Icon name="chevron-forward" size={20} color="#888" />
+          </TouchableOpacity>
 
-        {/* Add other feature cards here */}
-      </View>
+          {/* Food Detection */}
+          <TouchableOpacity
+            style={styles.featureCard}
+            onPress={() => navigation.navigate("FoodDetection")}
+            activeOpacity={0.8}
+          >
+            <View style={styles.cardIconContainer}>
+              <Icon name="fast-food-outline" size={24} color="#fff" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Detect Food</Text>
+              <Text style={styles.cardDesc}>AI-powered meal analysis</Text>
+            </View>
+            <Icon name="chevron-forward" size={20} color="#888" />
+          </TouchableOpacity>
 
-      {/* Progress Section */}
-      <View style={styles.progressSection}>
-        <Text style={styles.sectionTitle}>Daily Progress</Text>
-        <View style={styles.progressCards}>
-          <CircularProgress 
-            value={1500} 
-            maxValue={2000} 
+          {/* Fruit/Vegetable Detection */}
+          <TouchableOpacity
+            style={styles.featureCard}
+            onPress={() => navigation.navigate("FruitVegetableDetection")}
+            activeOpacity={0.8}
+          >
+            <View style={styles.cardIconContainer}>
+              <Icon name="leaf-outline" size={24} color="#fff" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Fruits & Vegetables</Text>
+              <Text style={styles.cardDesc}>
+                Get precise nutritional values
+              </Text>
+            </View>
+            <Icon name="chevron-forward" size={20} color="#888" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Progress Section */}
+        <Text style={styles.sectionTitle}>Daily Goals</Text>
+        <View style={styles.progressSection}>
+          <CircularProgress
+            value={1500}
+            maxValue={2000}
             title="Calories"
+            color="#333"
           />
-          <CircularProgress 
-            value={3} 
-            maxValue={8} 
-            title="Water"
+          <CircularProgress value={3} maxValue={8} title="Water" color="#333" />
+          <CircularProgress
+            value={5}
+            maxValue={8}
+            title="Protein"
+            color="#333"
           />
         </View>
-      </View>
-    </LinearGradient>
-    </ScrollView>
+
+        {/* Recent Activity */}
+        <Text style={styles.sectionTitle}>Recent Activity</Text>
+        <View style={styles.recentActivityContainer}>
+          <View style={styles.activityItem}>
+            <View style={styles.activityIconContainer}>
+              <Icon name="restaurant-outline" size={20} color="#fff" />
+            </View>
+            <View style={styles.activityContent}>
+              <Text style={styles.activityTitle}>Breakfast</Text>
+              <Text style={styles.activityDesc}>
+                Oatmeal with fruits • 320 calories
+              </Text>
+            </View>
+            <Text style={styles.activityTime}>8:30 AM</Text>
+          </View>
+          <View style={styles.activityItem}>
+            <View style={styles.activityIconContainer}>
+              <Icon name="cafe-outline" size={20} color="#fff" />
+            </View>
+            <View style={styles.activityContent}>
+              <Text style={styles.activityTitle}>Snack</Text>
+              <Text style={styles.activityDesc}>
+                Protein shake • 180 calories
+              </Text>
+            </View>
+            <Text style={styles.activityTime}>11:00 AM</Text>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    backgroundColor: "#000",
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
   scrollContainer: {
     flexGrow: 1,
-    paddingBottom: 20, // Add space at bottom <button class="citation-flag" data-index="7">
-  },
-  gradient: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 40,
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 40,
+    paddingBottom: 30,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  profile: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 20,
+    backgroundColor: "#000",
   },
   greeting: {
-    fontSize: 18,
-    color: 'white',
+    fontSize: 14,
+    color: "#aaa",
   },
-  appName: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: 'white',
+  userName: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#fff",
   },
-  cardsContainer: {
-    marginBottom: 30,
+  profileButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#333",
+    justifyContent: "center",
+    alignItems: "center",
   },
-  featureCard: {
-    backgroundColor: 'white',
+  summaryCard: {
+    backgroundColor: "#fff",
     borderRadius: 15,
     padding: 20,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
+    margin: 20,
+    marginTop: 0,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    elevation: 5,
+    shadowRadius: 4,
+    elevation: 3,
+    transform: [{ translateY: -20 }],
   },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 5,
+  summaryTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 15,
   },
-  cardDesc: {
-    fontSize: 14,
-    color: '#7f8c8d',
-    marginBottom: 10,
+  summaryContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  cardChevron: {
-    position: 'absolute',
-    right: 20,
-    top: '50%',
-    marginTop: -12,
+  summaryItem: {
+    flex: 1,
+    alignItems: "center",
   },
-  progressSection: {
-    marginTop: 30,
+  summaryValue: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#000",
+    marginTop: 5,
+  },
+  summaryLabel: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 3,
+  },
+  summaryDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: "#e0e0e0",
   },
   sectionTitle: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: 'white',
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#000",
+    paddingHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 15,
+  },
+  cardsContainer: {
+    paddingHorizontal: 20,
+  },
+  featureCard: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
+  },
+  cardIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: "#000",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cardContent: {
+    flex: 1,
+    marginLeft: 15,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000",
+  },
+  cardDesc: {
+    fontSize: 13,
+    color: "#666",
+    marginTop: 2,
+  },
+  progressSection: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    paddingHorizontal: 20,
+    marginTop: 10,
     marginBottom: 20,
   },
-  progressCards: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
   progressContainer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   progressText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: 'white',
-    marginTop: 10,
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#000",
+    marginTop: 8,
   },
   progressTitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 5,
+    fontSize: 12,
+    color: "#666",
+    marginTop: 2,
+  },
+  recentActivityContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  activityItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
+  },
+  activityIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#000",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  activityContent: {
+    flex: 1,
+    marginLeft: 15,
+  },
+  activityTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#000",
+  },
+  activityDesc: {
+    fontSize: 13,
+    color: "#666",
+    marginTop: 2,
+  },
+  activityTime: {
+    fontSize: 12,
+    color: "#999",
   },
 });
 

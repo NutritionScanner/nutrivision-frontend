@@ -1,10 +1,12 @@
 // src/api/api.ts
 import axios from "axios";
 
-const API_BASE_URL = "http://192.168.1.5:8000";
+const API_BASE_URL =
+  process.env.NUTRIVISION_BACKEND_URL ||
+  "https://nutrivision-backend.onrender.com";
 const USER_API_URL = "http://your-backend-url:5000/api";
 const API_BASE =
-  process.env.API_BASE_URL || "https://your-render-api.onrender.com";
+  process.env.API_BASE_URL || "https://nutrivision-backend.onrender.com";
 
 export const fetchNutritionData = async (barcode: string) => {
   try {

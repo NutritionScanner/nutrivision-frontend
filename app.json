@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "NutriVisionF",
+    "name": "NutriVision",
     "slug": "NutriVisionF",
     "scheme": "nutrivisionf",
     "version": "1.0.0",
@@ -9,7 +9,7 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -18,10 +18,6 @@
       "bundleIdentifier": "com.anonymous.NutriVisionF"
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
@@ -33,7 +29,12 @@
       "package": "com.anonymous.NutriVisionF"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/icon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c0524661-8b69-4083-b41f-378859b6350e"
+      }
     }
   }
 }

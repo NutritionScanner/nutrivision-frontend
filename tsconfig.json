@@ -8,27 +8,14 @@
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "@env": [
-        "./src/types/env.d.ts"
-      ]
+      "@env": ["./src/types/env.d.ts"],
+      "@firebase/auth": ["./node_modules/@firebase/auth/dist/index.rn.d.ts"]
     },
-    "typeRoots": [
-      "./src/types",
-      "./node_modules/@types"
-    ],
-    "lib": [
-      "esnext"
-    ],
+    "typeRoots": ["./src/types", "./node_modules/@types"],
+    "lib": ["esnext"],
     "resolveJsonModule": true
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "nativewind.d.ts",
-    "src"
-, "server.js"  ],
-  "exclude": [
-    "node_modules"
-  ],
+  "include": ["**/*.ts", "**/*.tsx", "nativewind.d.ts", "src", "server.js"],
+  "exclude": ["node_modules"],
   "extends": "expo/tsconfig.base"
 }

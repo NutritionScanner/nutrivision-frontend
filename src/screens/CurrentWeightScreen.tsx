@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   progress: {
-    width: "50%", // 50% progress indicates we're on the Weight Selection step
+    width: "50%",
     height: "100%",
     backgroundColor: "black",
     borderRadius: 8,

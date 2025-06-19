@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,11 +6,14 @@ import {
   StyleSheet,
   Image,
   StatusBar,
+  Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { StackNavigationProp } from "@react-navigation/stack";
 import Svg, { Circle } from "react-native-svg";
 import { ScrollView } from "react-native";
+import { auth } from "../firebaseConfig";
+import { signOut } from "firebase/auth";
 
 interface CircularProgressProps {
   value: number;
@@ -92,7 +95,39 @@ interface Props {
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const greeting = getDynamicGreeting();
-  const userName = "Alex"; // Replace with actual user name from your auth system
+  const [userName, setUserName] = useState("User"); // Replace with actual user name from your auth system
+
+  useEffect(() => {
+    const currentUser = auth.currentUser;
+    if (currentUser && currentUser.email) {
+      const nameFromEmail = currentUser.email.split("@")[0];
+      setUserName(
+        nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1)
+      );
+    }
+  }, []);
+
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await signOut(auth);
+            // Navigation will be handled automatically by the auth state listener
+          } catch (error) {
+            console.error("Logout error:", error);
+            Alert.alert("Error", "Failed to logout. Please try again.");
+          }
+        },
+      },
+    ]);
+  };
 
   return (
     <View style={styles.mainContainer}>
@@ -107,12 +142,20 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             <Text style={styles.greeting}>{greeting}</Text>
             <Text style={styles.userName}>{userName}</Text>
           </View>
-          <TouchableOpacity
-            style={styles.profileButton}
-            onPress={() => navigation.navigate("Profile")}
-          >
-            <Icon name="person" size={20} color="#fff" />
-          </TouchableOpacity>
+          <View style={styles.headerButtons}>
+            <TouchableOpacity
+              style={styles.profileButton}
+              onPress={() => navigation.navigate("Profile")}
+            >
+              <Icon name="person" size={20} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={handleLogout}
+            >
+              <Icon name="log-out-outline" size={20} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Daily Summary Card */}
@@ -249,6 +292,19 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  headerButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  logoutButton: {
+    backgroundColor: "#ff4444",
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   mainContainer: {
     flex: 1,
     backgroundColor: "#000",
